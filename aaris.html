@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A.A.R.I.S. Terminali</title>
+  <style>
+    body {
+      background-color: #050505;
+      color: #00f0ff;
+      font-family: 'Courier New', Courier, monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    h1 {
+      text-shadow: 0 0 15px rgba(0, 240, 255, 0.8);
+      letter-spacing: 3px;
+      margin-bottom: 20px;
+    }
+
+    #terminal-box {
+      border: 2px solid #00f0ff;
+      background: #090909;
+      padding: 20px;
+      width: 500px;
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+    }
+
+    #status {
+      margin-bottom: 20px;
+      min-height: 40px;
+      font-size: 1.1rem;
+      line-height: 1.4;
+    }
+
+    #aaris-input {
+      background: #111;
+      border: 1px solid #00f0ff;
+      color: #00f0ff;
+      padding: 12px;
+      width: 100%;
+      box-sizing: border-box;
+      font-family: monospace;
+      font-size: 1rem;
+      outline: none;
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.1) inset;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>A.A.R.I.S. ÇEVRİMİÇİ</h1>
+  
+  <div id="terminal-box">
+    <div id="status">Aaris çekirdek sistemi aktif. Komutunuzu bekliyorum...</div>
+    <input type="text" id="aaris-input" placeholder="Komutunuzu buraya yazın..." autofocus>
+  </div>
+
+  <script>
+    const statusDiv = document.getElementById('status');
+    const inputEl = document.getElementById('aaris-input');
+    const synth = window.speechSynthesis;
+
+    function speak(text) {
+      if (!synth) return;
+      try {
+        synth.cancel(); 
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'tr-TR';
+        utterance.rate = 1;
+        utterance.pitch = 0.6; 
+        synth.speak(utterance);
+      } catch (e) {
+        console.error("Seslendirme hatası:", e);
+      }
+    }
+
+    function processCommand(transcript) {
+      statusDiv.innerHTML = `<span style="color: #a0aec0;">Siz:</span> ${transcript}<br>`;
+
+      if (transcript.includes('merhaba') || transcript.includes('selam')) {
+        const reply = 'Merhaba. Tüm yapay zeka modülleri kararlı durumda çalışıyor. Komutunuzu bekliyorum.';
+        statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+        speak(reply);
+      } 
+      else if (transcript.includes('kimsin') || transcript.includes('adın ne')) {
+        const reply = 'Ben Aaris. Bilgisayarınızın arayüzünü yönetmek ve size asistanlık etmek için programlanmış bir yapay zekayım.';
+        statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+        speak(reply);
+      }
+      else if (transcript.includes('saat') || transcript.includes('zaman')) {
+        const now = new Date();
+        const reply = `Sistem saati: ${now.getHours()} ${now.getMinutes()}`;
+        statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+        speak(reply);
+      } 
+      else if (transcript.includes('hava durumu') || transcript.includes('hava kaç derece')) {
+        const reply = 'Bulunduğunuz konumun güncel hava durumu internet üzerinden kontrol ediliyor.';
+        statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+        speak(reply);
+        window.open('https://www.google.com/search?q=hava+durumu', '_blank');
+      }
+      else if (transcript.includes('tarot') || transcript.includes('kart seç')) {
+        const cards = ['Kupa Ası', 'Büyücü', 'Deli', 'Kader Çarkı', 'Ölüm', 'Yıldız', 'İmparatoriçe'];
+        const randomCard = cards[Math.floor(Math.random() * cards.length)];
+        const reply = `Sizin için desteden bir kart çektim: ${randomCard}. Bu kartın enerjisi bugün sizinle olsun.`;
+        statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+        speak(reply);
+      }
+      else if (transcript.includes('hesapla')) {
+        const expression = transcript.replace('hesapla', '').trim();
+        try {
+          const result = new Function(`return ${expression}`)();
+          const reply = `İşlemin sonucu: ${result}`;
+          statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+          speak(reply);
+        } catch (err) {
+          const reply = 'Matematiksel işlemi hesaplayamadım, lütfen formatı kontrol edin.';
+          statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+          speak(reply);
+        }
+      }
+      else if (transcript.includes('ara') || transcript.includes('bul')) {
+        const query = transcript.replace('ara', '').replace('bul', '').replace("google'da", "").trim();
+        if (query) {
+          const reply = `${query} konusu internet üzerinde araştırılıyor.`;
+          statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+          speak(reply);
+          window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
+        } else {
+          const reply = 'Ne aramamı istediğinizi anlayamadım.';
+          statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+          speak(reply);
+        }
+      }
+      else if (transcript.includes('kapat') || transcript.includes('çıkış')) {
+        const reply = 'Yapay zeka arayüzü uyku moduna alınıyor. Bağlantı kesildi.';
+        statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+        speak(reply);
+      } 
+      else {
+        const reply = 'Bu komut çekirdek algoritmalarım tarafından anlaşılamadı. Tekrar eder misiniz?';
+        statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+        speak(reply);
+      }
+    }
+
+    inputEl.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        const cmd = this.value.toLowerCase().trim();
+        if (cmd) {
+          processCommand(cmd);
+          this.value = '';
+        }
+      }
+    });
+    function processCommand(transcript) {
+      statusDiv.innerHTML = `<span style="color: #a0aec0;">Siz:</span> ${transcript}<br>`;
+
+      // 1. Durum: Selamlaşma
+      if (transcript.includes('merhaba') || transcript.includes('selam')) {
+        const reply = 'Merhaba. Tüm yapay zeka modülleri kararlı durumda çalışıyor. Komutunuzu bekliyorum.';
+        statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+        speak(reply);
+      } 
+      // 2. Durum: Sistem Kimliği
+      else if (transcript.includes('kimsin') || transcript.includes('adın ne')) {
+        const reply = 'Ben Aaris. Bilgisayarınızın arayüzünü yönetmek ve size asistanlık etmek için programlanmış bir yapay zekayım.';
+        statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+        speak(reply);
+      }
+      // 3. Durum: Zaman Bilgisi
+      else if (transcript.includes('saat') || transcript.includes('zaman')) {
+        const now = new Date();
+        const reply = `Sistem saati: ${now.getHours()} ${now.getMinutes()}`;
+        statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+        speak(reply);
+      } 
+      // 4. Durum: Not Alma Modülü (Örn: "not al projeyi tamamla")
+      else if (transcript.includes('not al')) {
+        const note = transcript.replace('not al', '').trim();
+        if (note) {
+          localStorage.setItem('aaris_note', note);
+          const reply = `Anlaşıldı. Hafızama şu notu kaydettim: ${note}`;
+          statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+          speak(reply);
+        } else {
+          const reply = 'Hafızaya kaydetmek için herhangi bir not belirtmediniz.';
+          statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+          speak(reply);
+        }
+      }
+      // 5. Durum: Notu Okuma Modülü (Örn: "notumu oku" veya "notum ne")
+      else if (transcript.includes('notumu oku') || transcript.includes('notum ne')) {
+        const savedNote = localStorage.getItem('aaris_note');
+        if (savedNote) {
+          const reply = `Hafızamdaki güncel notunuz şu şekilde: ${savedNote}`;
+          statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+          speak(reply);
+        } else {
+          const reply = 'Hafızamda kayıtlı herhangi bir not bulunamadı.';
+          statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+          speak(reply);
+        }
+      }
+      // 6. Durum: Sistem Durumu Tanılaması
+      else if (transcript.includes('sistem durumu') || transcript.includes('tarama yap')) {
+        const reply = 'Ana çekirdek sıcaklığı normal. Bellek optimizasyonu yüzde 98. Tüm algoritmalar güvenli.';
+        statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+        speak(reply);
+      }
+      // 7. Durum: Hava Durumu Kontrolü
+      else if (transcript.includes('hava durumu') || transcript.includes('hava kaç derece')) {
+        const reply = 'Bulunduğunuz konumun güncel hava durumu internet üzerinden kontrol ediliyor.';
+        statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+        speak(reply);
+        window.open('https://www.google.com/search?q=hava+durumu', '_blank');
+      }
+      // 8. Durum: Eğlence Modülü (Tarot Kartı Seçimi)
+      else if (transcript.includes('tarot') || transcript.includes('kart seç')) {
+        const cards = ['Kupa Ası', 'Büyücü', 'Deli', 'Kader Çarkı', 'Ölüm', 'Yıldız', 'İmparatoriçe'];
+        const randomCard = cards[Math.floor(Math.random() * cards.length)];
+        const reply = `Sizin için desteden bir kart çektim: ${randomCard}. Bu kartın enerjisi bugün sizinle olsun.`;
+        statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+        speak(reply);
+      }
+      // 9. Durum: Matematik Modülü
+      else if (transcript.includes('hesapla')) {
+        const expression = transcript.replace('hesapla', '').trim();
+        try {
+          const result = new Function(`return ${expression}`)();
+          const reply = `İşlemin sonucu: ${result}`;
+          statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+          speak(reply);
+        } catch (err) {
+          const reply = 'Matematiksel işlemi hesaplayamadım, lütfen formatı kontrol edin.';
+          statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+          speak(reply);
+        }
+      }
+      // 10. Durum: Genel Web Araması Yapma
+      else if (transcript.includes('ara') || transcript.includes('bul')) {
+        const query = transcript.replace('ara', '').replace('bul', '').replace("google'da", "").trim();
+        if (query) {
+          const reply = `${query} konusu internet üzerinde araştırılıyor.`;
+          statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+          speak(reply);
+          window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
+        } else {
+          const reply = 'Ne aramamı istediğinizi anlayamadım.';
+          statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+          speak(reply);
+        }
+      }
+      // 11. Durum: Kapatma Komutu
+      else if (transcript.includes('kapat') || transcript.includes('çıkış')) {
+        const reply = 'Yapay zeka arayüzü uyku moduna alınıyor. Bağlantı kesildi.';
+        statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+        speak(reply);
+      } 
+      // 12. Durum: Tanımlanamayan Komutlar
+      else {
+        const reply = 'Bu komut çekirdek algoritmalarım tarafından anlaşılamadı. Tekrar eder misiniz?';
+        statusDiv.innerHTML += `<span style="color: #00f0ff;">Aaris:</span> ${reply}`;
+        speak(reply);
+      }
+    }
+  </script>
+
+</body>
+</html>
