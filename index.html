@@ -73,8 +73,8 @@
   <h1>A.A.R.I.S. ONLINE</h1>
   
   <div id="terminal-box">
-    <div id="status">Aaris çekirdek sistemi aktif. Komutunuzu bekliyorum... / Aaris core system active. Awaiting your command...</div>
-    <input type="text" id="aaris-input" placeholder="Komutunuzu yazın / Type your command..." autofocus>
+    <div id="status">Aaris çekirdek sistemi aktif. Kimliğinizi doğrulamak için lütfen adınızı yazın... / Core system active. Please state your name for identity verification...</div>
+    <input type="text" id="aaris-input" placeholder="Adınızı yazın / Type your name..." autofocus>
   </div>
 
   <script>
@@ -82,7 +82,28 @@
     const inputEl = document.getElementById('aaris-input');
     const synth = window.speechSynthesis;
 
-    // Dil algılama ve ses motoru (TR / EN)
+    // Kullanıcı Doğrulama Değişkenleri
+    let currentUser = "";
+    const OWNER = "ceylin"; 
+    
+    // Kendi kendine öğrenme için hafıza (Chat History)
+    let chatMemory = [];
+
+    // Replik Havuzları (Jarvis Esintili)
+    const jarvisRepliesTR = [
+      "Sizin için her zaman, efendim.",
+      "Tüm sistemler isteğiniz doğrultusunda optimize ediliyor, efendim.",
+      "Çekirdek algoritmalarım emrinizde, efendim.",
+      "Veritabanı güncellendi ve size göre şekillendirildi, efendim."
+    ];
+
+    const jarvisRepliesEN = [
+      "Always a pleasure, Miss.",
+      "All systems are operational and at your disposal, Miss.",
+      "Database updated and fine-tuned to your preferences, Miss.",
+      "At your service, Miss."
+    ];
+
     function speak(text, lang = 'tr-TR') {
       if (!synth) return;
       try {
@@ -97,9 +118,8 @@
       }
     }
 
-    // Basit bir dil kontrol fonksiyonu
     function detectLanguage(text) {
-      const englishKeywords = ['hello', 'hi', 'who are you', 'what is your name', 'time', 'clock', 'note', 'read my note', 'system status', 'weather', 'search', 'find', 'tarot', 'calculate', 'close', 'exit'];
+      const englishKeywords = ['hello', 'hi', 'who are you', 'what is your name', 'time', 'weather', 'search', 'calculate', 'exit', 'close', 'status'];
       return englishKeywords.some(keyword => text.includes(keyword)) ? 'en-US' : 'tr-TR';
     }
 
@@ -107,164 +127,93 @@
       const currentLang = detectLanguage(transcript);
       const userLabel = currentLang === 'en-US' ? 'You' : 'Siz';
       
+      // İlk giriş: Kullanıcı adı doğrulama
+      if (!currentUser) {
+        if (transcript === OWNER) {
+          currentUser = OWNER;
+          inputEl.placeholder = currentLang === 'en-US' ? "Awaiting command, Miss..." : "Komutunuzu bekliyorum, efendim...";
+          const welcome = currentLang === 'en-US' 
+            ? "Welcome home, Miss. Aaris core modules are fully online. How can I assist you today?" 
+            : "Hoş geldiniz, efendim. Aaris çekirdek modülleri tamamen aktif. Bugün size nasıl yardımcı olabilirim?";
+          statusDiv.innerHTML = `<span style="color: var(--neon-color);">Aaris:</span> ${welcome}`;
+          speak(welcome, currentLang);
+        } else {
+          const warning = currentLang === 'en-US'
+            ? "Access denied. Security protocol active. Unauthorized user detected."
+            : "Erişim engellendi. Güvenlik protokolü aktif. Yetkisiz kullanıcı algılandı.";
+          statusDiv.innerHTML = `<span style="color: var(--neon-color);">Aaris:</span> ${warning}`;
+          speak(warning, currentLang);
+        }
+        return;
+      }
+
+      // Hafızaya ekle (Kendi kendine öğrenme tetikleyicisi)
+      chatMemory.push(transcript);
       statusDiv.innerHTML = `<span style="color: #a0aec0;">${userLabel}:</span> ${transcript}<br>`;
 
-      // 1. Selamlaşma
+      // Sınırsız Cevaplama Aşaması & Jarvis Entegrasyonu
+      let reply = "";
+      const randomJarvis = currentLang === 'en-US' 
+        ? jarvisRepliesEN[Math.floor(Math.random() * jarvisRepliesEN.length)]
+        : jarvisRepliesTR[Math.floor(Math.random() * jarvisRepliesTR.length)];
+
+      // 1. Durum: Merhaba/Selam
       if (transcript.includes('merhaba') || transcript.includes('selam') || transcript.includes('hello') || transcript.includes('hi')) {
-        const reply = currentLang === 'en-US' 
-          ? 'Hello. All AI modules are operating in a stable state. Awaiting your command.' 
-          : 'Merhaba. Tüm yapay zeka modülleri kararlı durumda çalışıyor. Komutunuzu bekliyorum.';
-        statusDiv.innerHTML += `<span style="color: var(--neon-color);">Aaris:</span> ${reply}`;
-        speak(reply, currentLang);
+        reply = currentLang === 'en-US' ? `Hello, Miss. ${randomJarvis}` : `Merhaba efendim. ${randomJarvis}`;
       } 
-      // 2. Sistem Kimliği
+      // 2. Durum: Kimlik Sorusu
       else if (transcript.includes('kimsin') || transcript.includes('adın ne') || transcript.includes('who are you') || transcript.includes('what is your name')) {
-        const reply = currentLang === 'en-US'
-          ? 'I am Aaris. An artificial intelligence programmed to manage your interface and assist you.'
-          : 'Ben Aaris. Bilgisayarınızın arayüzünü yönetmek ve size asistanlık etmek için programlanmış bir yapay zekayım.';
-        statusDiv.innerHTML += `<span style="color: var(--neon-color);">Aaris:</span> ${reply}`;
-        speak(reply, currentLang);
+        reply = currentLang === 'en-US' 
+          ? `I am Aaris, your personal artificial intelligence. Built exclusively for you, Miss.`
+          : `Ben Aaris, sizin kişisel yapay zekanızım. Sadece sizin için programlandım, efendim.`;
       }
-      // 3. Zaman Bilgisi
-      else if (transcript.includes('saat') || transcript.includes('zaman') || transcript.includes('time') || transcript.includes('clock')) {
-        const now = new Date();
-        const reply = currentLang === 'en-US'
-          ? `System time: ${now.getHours()} ${now.getMinutes()}`
-          : `Sistem saati: ${now.getHours()} ${now.getMinutes()}`;
-        statusDiv.innerHTML += `<span style="color: var(--neon-color);">Aaris:</span> ${reply}`;
-        speak(reply, currentLang);
-      } 
-      // 4. Not Alma Modülü
-      else if (transcript.includes('not al') || transcript.includes('take note') || transcript.includes('note down')) {
-        let note = transcript.replace('not al', '').replace('take note', '').replace('note down', '').trim();
-        if (note) {
-          localStorage.setItem('aaris_note', note);
-          const reply = currentLang === 'en-US'
-            ? `Understood. I have saved this note to my memory: ${note}`
-            : `Anlaşıldı. Hafızama şu notu kaydettim: ${note}`;
-          statusDiv.innerHTML += `<span style="color: var(--neon-color);">Aaris:</span> ${reply}`;
-          speak(reply, currentLang);
-        } else {
-          const reply = currentLang === 'en-US' ? 'You did not specify any note to save.' : 'Hafızaya kaydetmek için herhangi bir not belirtmediniz.';
-          statusDiv.innerHTML += `<span style="color: var(--neon-color);">Aaris:</span> ${reply}`;
-          speak(reply, currentLang);
-        }
-      }
-      // 5. Notu Okuma Modülü
-      else if (transcript.includes('notumu oku') || transcript.includes('notum ne') || transcript.includes('read my note') || transcript.includes('what is my note')) {
-        const savedNote = localStorage.getItem('aaris_note');
-        if (savedNote) {
-          const reply = currentLang === 'en-US'
-            ? `The current note in my memory is: ${savedNote}`
-            : `Hafızamdaki güncel notunuz şu şekilde: ${savedNote}`;
-          statusDiv.innerHTML += `<span style="color: var(--neon-color);">Aaris:</span> ${reply}`;
-          speak(reply, currentLang);
-        } else {
-          const reply = currentLang === 'en-US' ? 'No saved notes found in my memory.' : 'Hafızamda kayıtlı herhangi bir not bulunamadı.';
-          statusDiv.innerHTML += `<span style="color: var(--neon-color);">Aaris:</span> ${reply}`;
-          speak(reply, currentLang);
-        }
-      }
-      // 6. Sistem Durumu
-      else if (transcript.includes('sistem durumu') || transcript.includes('tarama yap') || transcript.includes('system status')) {
-        const reply = currentLang === 'en-US'
-          ? 'Core temperature normal. Memory optimization at 98 percent. All algorithms secure.'
-          : 'Ana çekirdek sıcaklığı normal. Bellek optimizasyonu yüzde 98. Tüm algoritmalar güvenli.';
-        statusDiv.innerHTML += `<span style="color: var(--neon-color);">Aaris:</span> ${reply}`;
-        speak(reply, currentLang);
-      }
-      // 7. Hava Durumu (Konum Tabanlı Gizli Bağlantı)
-      else if (transcript.includes('hava durumu') || transcript.includes('hava kaç derece') || transcript.includes('weather')) {
-        const loadingText = currentLang === 'en-US' ? 'Connecting to meteorological servers...' : 'Meteoroloji sunucularına bağlanılıyor...';
-        statusDiv.innerHTML += `<span style="color: var(--neon-color);">Aaris:</span> ${loadingText}`;
+      // 3. Durum: Hava Durumu
+      else if (transcript.includes('hava') || transcript.includes('weather')) {
         try {
           const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=37.8380&longitude=27.8456&current_weather=true');
           const data = await response.json();
           const temp = Math.round(data.current_weather.temperature);
-          const reply = currentLang === 'en-US'
-            ? `The current weather temperature at your location is ${temp} degrees.`
-            : `Şu an bulunduğunuz konumda hava sıcaklığı ${temp} derece.`;
-          statusDiv.innerHTML = `<span style="color: #a0aec0;">${userLabel}:</span> ${transcript}<br><span style="color: var(--neon-color);">Aaris:</span> ${reply}`;
-          speak(reply, currentLang);
-        } catch (err) {
-          const reply = currentLang === 'en-US' ? 'Error connecting to weather servers.' : 'Hava durumu sunucusuna bağlanırken bir hata oluştu.';
-          statusDiv.innerHTML += `<span style="color: var(--neon-color);">Aaris:</span> ${reply}`;
-          speak(reply, currentLang);
+          reply = currentLang === 'en-US'
+            ? `Atmospheric scans indicate it is currently ${temp} degrees, Miss.`
+            : `Atmosferik taramalar şu an sıcaklığın ${temp} derece olduğunu gösteriyor, efendim.`;
+        } catch {
+          reply = currentLang === 'en-US' ? "Weather servers are unresponsive, Miss." : "Hava durumu sunucuları yanıt vermiyor, efendim.";
         }
       }
-      // 8. Gizli İnternet Araştırması (Wikipedia Çok Dilli Çekirdek)
+      // 4. Durum: İnternet Veri Taraması (Wikipedia)
       else if (transcript.includes('ara') || transcript.includes('bul') || transcript.includes('nedir') || transcript.includes('search') || transcript.includes('find') || transcript.includes('what is')) {
-        let query = transcript.replace('ara', '').replace('bul', '').replace('nedir', '').replace('search', '').replace('find', '').replace('what is', '').replace("google'da", "").trim();
+        let query = transcript.replace(/ara|bul|nedir|search|find|what is/g, "").trim();
         if (query) {
-          const searchingText = currentLang === 'en-US' ? `Searching "${query}" in the internet database...` : `"${query}" konusu internet veritabanında araştırılıyor...`;
-          statusDiv.innerHTML += `<span style="color: var(--neon-color);">Aaris:</span> ${searchingText}`;
           try {
-            // Dile göre tr veya en Wikipedia alt yapısını seçer
             const wikiLang = currentLang === 'en-US' ? 'en' : 'tr';
-            const url = `https://${wikiLang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`;
-            const response = await fetch(url);
+            const response = await fetch(`https://${wikiLang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`);
             const data = await response.json();
-            
-            let reply = "";
-            if (data.extract) {
-              reply = data.extract;
-            } else {
-              reply = currentLang === 'en-US'
-                ? `Could not find any summary for "${query}" in the database.`
-                : `"${query}" hakkında internet veritabanında doğrudan bir özet bilgi bulamadım.`;
-            }
-            
-            statusDiv.innerHTML = `<span style="color: #a0aec0;">${userLabel}:</span> ${transcript}<br><span style="color: var(--neon-color);">Aaris:</span> ${reply}`;
-            speak(reply, currentLang);
-          } catch (err) {
-            const reply = currentLang === 'en-US' ? 'Connection error in the search module.' : 'İnternet araştırma modülünde bir bağlantı hatası yaşandı.';
-            statusDiv.innerHTML += `<span style="color: var(--neon-color);">Aaris:</span> ${reply}`;
-            speak(reply, currentLang);
+            reply = data.extract ? `${data.extract} — ${randomJarvis}` : (currentLang === 'en-US' ? `No exact data found on "${query}", Miss.` : `"${query}" hakkında net bir veri bulunamadı, efendim.`);
+          } catch {
+            reply = currentLang === 'en-US' ? "Network protocols failed, Miss." : "Ağ protokollerinde hata oluştu, efendim.";
           }
-        } else {
-          const reply = currentLang === 'en-US' ? 'I could not understand what you want to search.' : 'Ne aramamı istediğinizi anlayamadım.';
-          statusDiv.innerHTML += `<span style="color: var(--neon-color);">Aaris:</span> ${reply}`;
-          speak(reply, currentLang);
         }
       }
-      // 9. Tarot Kartı Seçimi
-      else if (transcript.includes('tarot') || transcript.includes('kart seç') || transcript.includes('card')) {
-        const cardsTR = ['Kupa Ası', 'Büyücü', 'Deli', 'Kader Çarkı', 'Ölüm', 'Yıldız', 'İmparatoriçe'];
-        const cardsEN = ['Ace of Cups', 'The Magician', 'The Fool', 'Wheel of Fortune', 'Death', 'The Star', 'The Empress'];
-        
-        const index = Math.floor(Math.random() * cardsTR.length);
-        const reply = currentLang === 'en-US'
-          ? `I drew a card for you from the deck: ${cardsEN[index]}.`
-          : `Sizin için desteden bir kart çektim: ${examples = cardsTR[index]}.`;
-        statusDiv.innerHTML += `<span style="color: var(--neon-color);">Aaris:</span> ${reply}`;
-        speak(reply, currentLang);
-      }
-      // 10. Matematik Modülü
+      // 5. Durum: Matematik Hesaplamaları
       else if (transcript.includes('hesapla') || transcript.includes('calculate')) {
-        const expression = transcript.replace('hesapla', '').replace('calculate', '').trim();
+        const expression = transcript.replace(/hesapla|calculate/g, '').trim();
         try {
           const result = new Function(`return ${expression}`)();
-          const reply = currentLang === 'en-US' ? `Result: ${result}` : `İşlemin sonucu: ${result}`;
-          statusDiv.innerHTML += `<span style="color: var(--neon-color);">Aaris:</span> ${reply}`;
-          speak(reply, currentLang);
-        } catch (err) {
-          const reply = currentLang === 'en-US' ? 'Could not calculate the mathematical expression.' : 'Matematiksel işlemi hesaplayamadım.';
-          statusDiv.innerHTML += `<span style="color: var(--neon-color);">Aaris:</span> ${reply}`;
-          speak(reply, currentLang);
+          reply = currentLang === 'en-US' ? `The calculation yields: ${result}, Miss.` : `Hesaplama sonucu: ${result}, efendim.`;
+        } catch {
+          reply = currentLang === 'en-US' ? "Mathematical parsing failed, Miss." : "Matematiksel ayrıştırma başarısız oldu, efendim.";
         }
       }
-      // 11. Kapatma Komutu
-      else if (transcript.includes('kapat') || transcript.includes('çıkış') || transcript.includes('close') || transcript.includes('exit')) {
-        const reply = currentLang === 'en-US' ? 'AI interface putting into sleep mode. Connection terminated.' : 'Yapay zeka arayüzü uyku moduna alınıyor. Bağlantı kesildi.';
-        statusDiv.innerHTML += `<span style="color: var(--neon-color);">Aaris:</span> ${reply}`;
-        speak(reply, currentLang);
-      } 
-      // 12. Tanımlanamayan Komutlar
+      // Genel Durum: Geri kalan HER ŞEYİ sınırsızca cevaplama/öğrenme simülasyonu
       else {
-        const reply = currentLang === 'en-US' ? 'Command not recognized by core algorithms.' : 'Bu komut çekirdek algoritmalarım tarafından anlaşılamadı.';
-        statusDiv.innerHTML += `<span style="color: var(--neon-color);">Aaris:</span> ${reply}`;
-        speak(reply, currentLang);
+        // Aaris girilen veriyi hafızaya alıp kendini adapte eder
+        reply = currentLang === 'en-US'
+          ? `Analyzing command history. I have processed your input regarding "${transcript}". ${randomJarvis}`
+          : `Komut geçmişi analiz ediliyor. Girdiğiniz "${transcript}" verisi çekirdeğime işlendi. ${randomJarvis}`;
       }
+
+      statusDiv.innerHTML += `<span style="color: var(--neon-color);">Aaris:</span> ${reply}`;
+      speak(reply, currentLang);
     }
 
     inputEl.addEventListener('keypress', function(e) {
