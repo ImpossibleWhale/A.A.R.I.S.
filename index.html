@@ -83,6 +83,9 @@
 
     function processCommand(transcript) {
       statusDiv.innerHTML = `<span style="color: #a0aec0;">Siz:</span> ${transcript}<br>`;
+      if (transcript.includes(' aaris are you there?') || transcript.includes('engine start')) {
+        const reply = 'At your service, Miss.';
+        statusDiv.innerHTML +=  '<span style="color: #D10034;Aaris.>/span> ${reply}'; }
 
       if (transcript.includes('merhaba') || transcript.includes('selam')) {
         const reply = 'Merhaba. Tüm yapay zeka modülleri kararlı durumda çalışıyor. Komutunuzu bekliyorum.';
